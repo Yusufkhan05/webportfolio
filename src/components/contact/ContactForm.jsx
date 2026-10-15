@@ -2,10 +2,17 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLang } from "../../i18n/LanguageContext";
 import { supabase } from "../../lib/supabase";
-import { EMAIL, WEB3FORMS_ACCESS_KEY } from "../../lib/constants";
+import { EMAIL, WEB3FORMS_ACCESS_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } from "../../lib/constants";
 import Glass from "../ui/Glass";
 import "../ui/Glass.css";
 import "./ContactForm.css";
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 function ContactForm() {
   const { t } = useLang();
@@ -58,32 +65,46 @@ function ContactForm() {
     try {
       let sentSuccessfully = false;
 
-      // 1. Telegram xabarnomasini xavfsiz backend API (/api/contact) orqali yuborish
-      try {
-        const tgRes = await fetch("/api/contact", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: payload.name.trim(),
-            email: payload.email.trim(),
-            subject: payload.subject.trim(),
-            message: payload.message.trim(),
-          }),
-        });
-
-        if (tgRes.ok) {
-          const tgData = await tgRes.json().catch(() => ({}));
-          if (tgData.success) {
-            sentSuccessfully = true;
+      // 0. Telegram bot orqali xabar yuborish
+      if (TELEGRAM_BOT_TOKEN) {
+        try {
+          let chatId = TELEGRAM_CHAT_ID;
+          if (!chatId) {
+            try {
+              const updRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+              const updData = await updRes.json();
+              if (updData.ok && Array.isArray(updData.result) && updData.result.length > 0) {
+                const last = updData.result[updData.result.length - 1];
+                chatId = last?.message?.chat?.id || last?.my_chat_member?.chat?.id;
+              }
+            } catch (e) {
+              console.warn("Telegram getUpdates note:", e);
+            }
           }
+
+          if (chatId) {
+            const tgText = `🔔 <b>Yangi xabar (Portfolio)</b>\n\n👤 <b>Ism:</b> ${escapeHtml(payload.name.trim())}\n📧 <b>Email:</b> ${escapeHtml(payload.email.trim())}\n📌 <b>Mavzu:</b> ${escapeHtml(payload.subject.trim())}\n\n💬 <b>Xabar:</b>\n${escapeHtml(payload.message.trim())}\n\n⏰ <i>${new Date().toLocaleString()}</i>`;
+
+            const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: tgText,
+                parse_mode: "HTML",
+              }),
+            });
+            const tgData = await tgRes.json().catch(() => ({}));
+            if (tgData.ok) {
+              sentSuccessfully = true;
+            }
+          }
+        } catch (tgErr) {
+          console.warn("Telegram note:", tgErr);
         }
-      } catch (tgErr) {
-        console.warn("Telegram API endpoint notice:", tgErr);
       }
 
-      // 2. Supabase bazasiga saqlash (Admin panel uchun)
+      // 1. Supabase bazasiga saqlash (Admin panel uchun)
       if (supabase) {
         try {
           const { error: dbErr } = await supabase.from("contact_messages").insert([
@@ -102,7 +123,7 @@ function ContactForm() {
         }
       }
 
-      // 3. FormSubmit orqali to'g'ridan-to'g'ri pochtaga yuborish va avto-javob
+      // 2. FormSubmit orqali to'g'ridan-to'g'ri pochtaga yuborish
       try {
         const fsRes = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
           method: "POST",
@@ -117,7 +138,7 @@ function ContactForm() {
             "Xabar matni": payload.message.trim(),
             _replyto: payload.email.trim(),
             _subject: `[Portfolio] ${payload.subject.trim()} (${payload.name.trim()})`,
-            _autoresponse: `Assalomu alaykum ${payload.name.trim()}! Xabaringiz muvaffaqiyatli qabul qilindi. Tez orada siz bilan bog'lanaman. Hurmat bilan, Yusufxon Jalolxojayev`,
+            _autoresponse: `Assalomu alaykum ${payload.name.trim()}! Xabaringiz muvaffaqiyatli qabul qilindi. Tez orada siz bilan bog'lanaman. Hurmat bilan, Yusufxon Jalolxo'jayev`,
             _template: "table",
             _captcha: "false",
           }),
@@ -137,7 +158,7 @@ function ContactForm() {
         console.warn("FormSubmit note:", fsErr);
       }
 
-      // 4. Web3Forms zaxira
+      // 3. Web3Forms zaxira
       if (WEB3FORMS_ACCESS_KEY) {
         try {
           const body = new FormData();

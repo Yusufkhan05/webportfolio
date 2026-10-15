@@ -37,7 +37,7 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/icon.png`;
 /** Web3Forms public access key (client-side OK) */
 export const WEB3FORMS_ACCESS_KEY =
   import.meta.env.VITE_WEB3FORMS_KEY ||
-  "31844405-555f-4c28-8cc2-e6bdaf262880";
+  "bfd7231f-54f0-4183-a53b-8d992f43ae37";
 
 /**
  * Admin panel login (UI)
