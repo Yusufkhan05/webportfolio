@@ -1,82 +1,199 @@
-# Professional Portfolio - Kamoliddin Mirzaboyev
+# Professional Portfolio - Jalolxojayev Yusufxon
 
-A modern, animated portfolio website built with React, Vite, and Framer Motion.
+A modern, animated portfolio website with CMS admin panel built with React, Vite, Supabase, and Framer Motion.
 
-## Features
+**Mobile Developer Portfolio** - Flutter, Dart
 
-✨ Professional animations with Framer Motion
-🎨 Modern gradient designs
-📱 Fully responsive design
-🚀 Fast performance with Vite
-💼 Portfolio showcase
-📧 Contact form
-🎯 Smooth scrolling navigation
+## 🎯 Features
 
-## Technologies Used
+✨ Professional animations with Framer Motion  
+🎨 Modern gradient designs  
+📱 Fully responsive design  
+🚀 Fast performance with Vite  
+💼 Dynamic portfolio showcase  
+📝 Blog system  
+🔐 **Admin Panel** (CMS)  
+📧 Contact form with Web3Forms  
+🎯 Smooth scrolling navigation  
+🗄️ Supabase backend (PostgreSQL + Storage)  
 
-- React 19
-- Vite
-- Framer Motion (animations)
-- Material-UI (tabs)
-- React Icons
-- React Router DOM
+## 🛠️ Technologies Used
 
-## Installation
+- **Frontend**: React 19, Vite 6
+- **Backend**: Supabase (PostgreSQL + Storage + Auth)
+- **UI**: Material-UI, Framer Motion, React Icons
+- **Routing**: React Router DOM v7
+- **Notifications**: Sonner (toast)
+- **Forms**: Web3Forms
+
+## 📦 Installation
 
 ```bash
+# Dependencies o'rnatish
 npm install
 ```
 
-## Development
+## ⚙️ Environment Setup
+
+`.env` faylini yarating va quyidagi qiymatlarni kiriting:
+
+```env
+# Supabase
+VITE_SUPABASE_URL=https://satnznlieuctrrttavjh.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key_here
+
+# Web3Forms (contact form)
+VITE_WEB3FORMS_KEY=your_web3forms_key
+
+# Site URL (production domain)
+VITE_SITE_URL=https://yourwebsite.com
+```
+
+## 🗄️ Database Setup
+
+1. [Supabase Dashboard](https://app.supabase.com)ga kiring
+2. **SQL Editor** bo'limini oching
+3. `supabase/SETUP_ALL.sql` faylidagi barcha SQL kodni nusxalang
+4. SQL editorga joylab **Run** bosing
+
+Bu quyidagilarni yaratadi:
+- `projects` jadvali (loyihalar)
+- `blogs` jadvali (blog postlar)
+- `site_content` jadvali (sayt kontenti)
+- `project-images` storage bucket
+- RLS (Row Level Security) policies
+
+## 🚀 Development
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Server http://localhost:5173 da ishga tushadi.
 
-## Build
+## 👨‍💻 Admin Panel
 
-```bash
-npm run build
-```
+### Admin Panelga kirish:
 
-## Preview Production Build
+**URL:** http://localhost:5173/admin
 
-```bash
-npm run preview
-```
+**Login ma'lumotlari:**
+- Login: `admin`
+- Parol: `yusufxon2005`
 
-## Project Structure
+### Admin Panel imkoniyatlari:
+
+1. **Dashboard** - Umumiy statistika
+2. **Kontent** - Sayt matnlarini tahrirlash (Hero, About, Experience, Skills, Education)
+3. **Loyihalar** - Loyihalar qo'shish/tahrirlash/o'chirish
+   - Rasm yuklash (cover + gallery)
+   - YouTube video qo'shish
+   - Kategoriyalar boshqaruvi
+   - Sotuvga qo'yish (for sale)
+4. **Blog** - Blog postlar boshqaruvi
+   - Rasm yuklash
+   - Draft/Published status
+   - Tashqi link (Medium, Dev.to)
+
+## 📁 Project Structure
 
 ```
 ├── src/
 │   ├── components/
 │   │   ├── navbar/
-│   │   └── footer/
+│   │   ├── footer/
+│   │   ├── contact/
+│   │   ├── seo/
+│   │   └── ui/
 │   ├── pages/
-│   │   └── home/
-│   ├── App.jsx
-│   └── main.jsx
-├── public/
-└── index.html
+│   │   ├── home/
+│   │   ├── admin/          # 🔐 Admin Panel
+│   │   ├── project/
+│   │   └── blog/
+│   ├── lib/
+│   │   ├── supabase.js     # Supabase client
+│   │   ├── projects.js     # Projects CRUD
+│   │   ├── blogs.js        # Blogs CRUD
+│   │   ├── siteContent.js  # Site content management
+│   │   ├── uploadImage.js  # Image upload
+│   │   └── constants.js    # Config
+│   ├── i18n/               # Tarjimalar (UZ/RU/EN)
+│   └── theme/              # Dark/Light theme
+├── supabase/               # SQL migration files
+└── public/                 # Static assets
 ```
 
-## Animations
+## 🏗️ Build
 
-The portfolio includes professional animations:
+```bash
+npm run build
+```
+
+Build fayllar `dist/` papkasida yaratiladi.
+
+## 👀 Preview Production Build
+
+```bash
+npm run preview
+```
+
+## 🎨 Animations
+
+Portfolio professional animatsiyalarni o'z ichiga oladi:
 - Fade in/out effects
-- Slide animations
+- Slide animations  
 - Hover effects
 - Gradient animations
 - Floating elements
 - Ripple effects
 - Smooth transitions
 
-## License
+## 🔒 Security Notes
 
-© 2025 Kamoliddin Mirzaboyev. All rights reserved.
+- Admin panel RLS (Row Level Security) bilan himoyalangan
+- Image upload maksimal hajm: 2.5MB
+- CORS sozlamalari production uchun sozlangan
+- `.env` faylini git ga commit qilmang!
 
-## Expanding the ESLint configuration
+## 📝 To-Do / Improvements
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [ ] Markdown editor for blog content
+- [ ] Image optimization pipeline
+- [ ] SEO analyzer dashboard
+- [ ] Analytics integration
+- [ ] Multi-language admin panel
+- [ ] Batch operations (delete multiple)
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. GitHub repo yarating va push qiling
+2. [Vercel](https://vercel.com)da import qiling
+3. Environment Variables qo'shing:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_WEB3FORMS_KEY`
+   - `VITE_SITE_URL`
+4. Deploy!
+
+### Netlify
+
+1. Build command: `npm run build`
+2. Publish directory: `dist`
+3. Environment variables yuqoridagi kabi qo'shing
+
+## 📄 License
+
+© 2025 Jalolxojayev Yusufxon. All rights reserved.
+
+## 👤 Contact
+
+- **Email**: yusufxonjalolxojayev95@gmail.com
+- **GitHub**: [@Yusufkhan05](https://github.com/Yusufkhan05)
+- **Telegram**: [@yusufxonjalolxojayev](https://t.me/yusufxonjalolxojayev)
+- **Phone**: +998 93 954 25 24
+
+---
+
+Built with ❤️ by Jalolxojayev Yusufxon - Mobile Developer

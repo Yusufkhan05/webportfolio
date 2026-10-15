@@ -59,7 +59,7 @@ function Footer() {
       >
         <div className="logo footer-logo">
           <div className="footer-logo-row">
-            <img src="/icon.png" alt="Kamoliddin Mirzaboyev" className="logo-img" />
+            <img src="/icon.png" alt="Jalolxojayev Yusufxon" className="logo-img" />
           </div>
           <p className="footerCopy">
             © {new Date().getFullYear()} {t.footer.rights}

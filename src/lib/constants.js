@@ -1,40 +1,35 @@
 /** Asosiy profil — to'g'ri GitHub */
-export const GITHUB_URL = "https://github.com/KamoliddinMirzaboyev";
-export const GITHUB_HANDLE = "KamoliddinMirzaboyev";
-export const TELEGRAM_URL = "https://t.me/MrMirzaboyev";
-export const EMAIL = "Kamoliddinmirzaboyev2005@gmail.com";
-export const PHONE = "+998889563848";
-export const PHONE_DISPLAY = "+998 88 956 38 48";
+export const GITHUB_URL = "https://github.com/Yusufkhan05";
+export const GITHUB_HANDLE = "Yusufkhan05";
+export const TELEGRAM_URL = "https://t.me/YusufxonJalolxojayev";
+export const EMAIL = "yusufxonjalolxojayev95@gmail.com";
+export const PHONE = "+998939542524";
+export const PHONE_DISPLAY = "+998 93 954 25 24";
 export const LINKEDIN_URL =
-  "https://www.linkedin.com/in/kamoliddin-mirzaboyev-8226a4329/";
+  "https://www.linkedin.com/in/jalolxojayev-yusufxon/";
 
 /** SEO — Vercel domain yoki custom domain (.env da o'zgartiring) */
 export const SITE_URL = (
-  import.meta.env.VITE_SITE_URL || "https://webportfolio.uz"
+  import.meta.env.VITE_SITE_URL || "https://portfolio.interevolution.uz"
 ).replace(/\/$/, "");
-export const SITE_NAME = "Kamoliddin Mirzaboyev";
+export const SITE_NAME = "Jalolxojayev Yusufxon";
 export const SITE_TITLE =
-  "Kamoliddin Mirzaboyev | Frontend Developer — React, TypeScript, Portfolio";
+  "Jalolxojayev Yusufxon | Mobile Developer — Flutter, Dart, Portfolio";
 export const SITE_DESCRIPTION =
-  "Kamoliddin Mirzaboyev — Farg'ona, O'zbekiston Frontend dasturchi. React, TypeScript, Vite. Portfolio: web loyihalar, yotoqxona CRM, e-commerce, landing. Frontend developer portfolio.";
+  "Jalolxojayev Yusufxon — Mobil dasturchi. Flutter, Dart. Portfolio: mobil ilovalar, cross-platform loyihalar. Mobile developer portfolio.";
 export const SITE_KEYWORDS = [
-  "Kamoliddin Mirzaboyev",
-  "Kamoliddin Mirzaboyev Frontend",
-  "Frontend Developer",
-  "Frontend dasturchi",
-  "React developer",
-  "TypeScript developer",
+  "Jalolxojayev Yusufxon",
+  "Mobile Developer",
+  "Mobil dasturchi",
+  "Flutter developer",
+  "Dart developer",
   "portfolio",
-  "web dasturchi",
-  "yotoqxona",
-  "yotoqxona CRM",
-  "JoyBor",
-  "loyiha",
-  "web loyiha",
-  "Vite",
-  "O'zbekiston Frontend",
-  "Farg'ona dasturchi",
-  "Kamoliddinmirzaboyev",
+  "mobil ilova",
+  "cross-platform",
+  "iOS",
+  "Android",
+  "O'zbekiston Mobile",
+  "Yusufkhan05",
 ].join(", ");
 export const SITE_LOGO = "/icon.png";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/icon.png`;
@@ -47,11 +42,11 @@ export const WEB3FORMS_ACCESS_KEY =
 /**
  * Admin panel login (UI)
  * Login: admin
- * Parol: kamoliddin
- * Supabase Auth ichida email sifatida saqlanadi (login "admin" → shu email)
+ * Parol: yusufxon2005
+ * Supabase Auth ichida email sifatida saqlanadi
  */
 export const ADMIN_LOGIN = "admin";
-export const ADMIN_PASSWORD = "kamoliddin";
-/** Supabase haqiqiy email format talab qiladi (.local yaroqsiz) */
+export const ADMIN_PASSWORD = "yusufxon2005";
+/** Supabase haqiqiy email format talab qiladi */
 export const ADMIN_AUTH_EMAIL =
-  import.meta.env.VITE_ADMIN_EMAIL || "admin@kamoliddin.dev";
+  import.meta.env.VITE_ADMIN_EMAIL || "admin@jalolxojayev.dev";

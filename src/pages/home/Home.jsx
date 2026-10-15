@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import "./Home.css";
 import { Tab, Tabs } from "@mui/material";
 import { LuExternalLink, LuGithub } from "react-icons/lu";
-import { FaCss3Alt, FaGitAlt, FaGithub, FaHtml5, FaReact } from "react-icons/fa";
-import { SiJavascript, SiTypescript, SiVite } from "react-icons/si";
-import { MdOutlineTranslate } from "react-icons/md";
+import { FaGitAlt, FaGithub } from "react-icons/fa";
+import { SiFlutter, SiDart, SiFirebase, SiAndroidstudio } from "react-icons/si";
+import { MdOutlineTranslate, MdPhoneAndroid } from "react-icons/md";
 import { HiOutlineCodeBracket } from "react-icons/hi2";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { fetchProjects } from "../../lib/projects";
@@ -99,22 +99,22 @@ function TiltCard({ children, className = "" }) {
   );
 }
 
-/** Har bo'lim uchun to'g'ri ikonlar (oldingi aralashmapdi) */
+/** Har bo'lim uchun to'g'ri ikonlar (Mobile dasturchi uchun) */
 const skillMeta = [
   {
     accent: "violet",
     icons: [
-      { Icon: FaHtml5, color: "#E34F26" },
-      { Icon: FaCss3Alt, color: "#1572B6" },
-      { Icon: HiOutlineCodeBracket, color: "#A5B4FC" },
+      { Icon: SiFlutter, color: "#02569B" },
+      { Icon: SiDart, color: "#0175C2" },
+      { Icon: SiFirebase, color: "#FFCA28" },
     ],
   },
   {
     accent: "cyan",
     icons: [
-      { Icon: SiJavascript, color: "#F7DF1E" },
-      { Icon: SiTypescript, color: "#3178C6" },
-      { Icon: FaReact, color: "#61DAFB" },
+      { Icon: SiDart, color: "#0175C2" },
+      { Icon: HiOutlineCodeBracket, color: "#A5B4FC" },
+      { Icon: MdPhoneAndroid, color: "#3DDC84" },
     ],
   },
   {
@@ -122,7 +122,8 @@ const skillMeta = [
     icons: [
       { Icon: FaGitAlt, color: "#F05032" },
       { Icon: FaGithub, color: "#E6E6E6" },
-      { Icon: SiVite, color: "#646CFF" },
+      { Icon: SiAndroidstudio, color: "#3DDC84" },
+      { Icon: HiOutlineCodeBracket, color: "#A5B4FC" },
     ],
   },
   {
@@ -160,7 +161,7 @@ function Home() {
   const hero = site?.hero || t.hero;
   const about = site?.about || t.about;
   const profile = site?.profile || {
-    name: "Kamoliddin Mirzaboyev",
+    name: "Jalolxojayev Yusufxon",
     initials: "KM",
     role: "Frontend · React · TypeScript",
     tags: ["Farg'ona", "O'zbekiston", t.about.available],
@@ -265,7 +266,7 @@ function Home() {
           </motion.div>
 
           <h1 className="mainText">
-            <SplitText text={profile.name || "Kamoliddin Mirzaboyev"} />
+            <SplitText text={profile.name || "Jalolxojayev Yusufxon"} />
           </h1>
 
           <motion.h2
@@ -736,7 +737,7 @@ function Home() {
               <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
               <a href={`tel:${PHONE}`}>{PHONE_DISPLAY}</a>
               <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
-                t.me/MrMirzaboyev
+                t.me/YusufxonJalolxojayev
               </a>
               <a href={GITHUB_URL} target="_blank" rel="noreferrer">
                 github.com/{GITHUB_HANDLE}

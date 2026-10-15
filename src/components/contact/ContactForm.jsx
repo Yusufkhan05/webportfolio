@@ -1,30 +1,38 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLang } from "../../i18n/LanguageContext";
-import { WEB3FORMS_ACCESS_KEY } from "../../lib/constants";
+import { supabase } from "../../lib/supabase";
+import { EMAIL, WEB3FORMS_ACCESS_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } from "../../lib/constants";
 import Glass from "../ui/Glass";
 import "../ui/Glass.css";
 import "./ContactForm.css";
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 function ContactForm() {
   const { t } = useLang();
   const c = t.contact;
   const formRef = useRef(null);
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
 
   const validate = (data) => {
     const errors = {};
-    if (!data.name || data.name.trim().length < 2) errors.name = c.errName;
+    if (!data.name || data.name.trim().length < 1) errors.name = c.errName || "Ismni kiriting";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((data.email || "").trim())) {
-      errors.email = c.errEmail;
+      errors.email = c.errEmail || "To'g'ri email kiriting";
     }
-    if (!data.subject || data.subject.trim().length < 2) {
-      errors.subject = c.errSubject;
+    if (!data.subject || data.subject.trim().length < 1) {
+      errors.subject = c.errSubject || "Mavzuni kiriting";
     }
-    if (!data.message || data.message.trim().length < 10) {
-      errors.message = c.errMessage;
+    if (!data.message || data.message.trim().length < 2) {
+      errors.message = "Xabar kamida 2 ta belgi bo'lsin";
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -39,13 +47,6 @@ function ContactForm() {
     if (!form) return;
 
     const formData = new FormData(form);
-
-    // Web3Forms honeypot (bo'sh bo'lishi shart)
-    if (formData.get("botcheck")) {
-      // Bot — yubormaymiz, lekin "success" ham yolg'on ko'rsatmaymiz
-      return;
-    }
-
     const payload = {
       name: String(formData.get("name") || ""),
       email: String(formData.get("email") || ""),
@@ -53,56 +54,146 @@ function ContactForm() {
       message: String(formData.get("message") || ""),
     };
 
-    if (!validate(payload)) return;
-
-    if (!WEB3FORMS_ACCESS_KEY) {
+    if (!validate(payload)) {
       setStatus("error");
-      setErrorMsg(c.errConfig);
+      setErrorMsg("Iltimos, maydonlarni to'g'ri to'ldiring");
       return;
     }
 
     setStatus("loading");
 
     try {
-      // Rasmiy usul: FormData (JSON emas — Cloudflare/API yaxshiroq qabul qiladi)
-      const body = new FormData();
-      body.append("access_key", WEB3FORMS_ACCESS_KEY);
-      body.append("name", payload.name.trim());
-      body.append("email", payload.email.trim());
-      body.append("subject", `[Portfolio] ${payload.subject.trim()}`);
-      body.append("message", payload.message.trim());
-      body.append("replyto", payload.email.trim());
-      body.append("from_name", payload.name.trim());
-      // bo'sh honeypot
-      body.append("botcheck", "");
+      let sentSuccessfully = false;
 
-      const res = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body,
-      });
+      // 0. Telegram bot orqali xabar yuborish
+      if (TELEGRAM_BOT_TOKEN) {
+        try {
+          let chatId = TELEGRAM_CHAT_ID;
+          if (!chatId) {
+            try {
+              const updRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+              const updData = await updRes.json();
+              if (updData.ok && Array.isArray(updData.result) && updData.result.length > 0) {
+                const last = updData.result[updData.result.length - 1];
+                chatId = last?.message?.chat?.id || last?.my_chat_member?.chat?.id;
+              }
+            } catch (e) {
+              console.warn("Telegram getUpdates note:", e);
+            }
+          }
 
-      let data = {};
-      const text = await res.text();
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error(
-          res.ok
-            ? c.errGeneric
-            : `${c.errGeneric} (HTTP ${res.status})`
-        );
+          if (chatId) {
+            const tgText = `🔔 <b>Yangi xabar (Portfolio)</b>\n\n👤 <b>Ism:</b> ${escapeHtml(payload.name.trim())}\n📧 <b>Email:</b> ${escapeHtml(payload.email.trim())}\n📌 <b>Mavzu:</b> ${escapeHtml(payload.subject.trim())}\n\n💬 <b>Xabar:</b>\n${escapeHtml(payload.message.trim())}\n\n⏰ <i>${new Date().toLocaleString()}</i>`;
+
+            const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: tgText,
+                parse_mode: "HTML",
+              }),
+            });
+            const tgData = await tgRes.json().catch(() => ({}));
+            if (tgData.ok) {
+              sentSuccessfully = true;
+            }
+          }
+        } catch (tgErr) {
+          console.warn("Telegram note:", tgErr);
+        }
       }
 
-      // success ba'zan boolean, ba'zan string
-      const ok =
-        data.success === true ||
-        data.success === "true" ||
-        data.status === "success";
+      // 1. Supabase bazasiga saqlash (Admin panel uchun)
+      if (supabase) {
+        try {
+          const { error: dbErr } = await supabase.from("contact_messages").insert([
+            {
+              name: payload.name.trim(),
+              email: payload.email.trim(),
+              subject: payload.subject.trim(),
+              message: payload.message.trim(),
+            },
+          ]);
+          if (!dbErr) {
+            sentSuccessfully = true;
+          }
+        } catch (dbE) {
+          console.warn("DB save note:", dbE);
+        }
+      }
 
-      if (!res.ok || !ok) {
-        throw new Error(
-          data.message || data.error || `${c.errGeneric} (HTTP ${res.status})`
-        );
+      // 2. FormSubmit orqali to'g'ridan-to'g'ri pochtaga yuborish
+      try {
+        const fsRes = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            "Ism": payload.name.trim(),
+            "Email": payload.email.trim(),
+            "Mavzu": payload.subject.trim(),
+            "Xabar matni": payload.message.trim(),
+            _replyto: payload.email.trim(),
+            _subject: `[Portfolio] ${payload.subject.trim()} (${payload.name.trim()})`,
+            _autoresponse: `Assalomu alaykum ${payload.name.trim()}! Xabaringiz muvaffaqiyatli qabul qilindi. Tez orada siz bilan bog'lanaman. Hurmat bilan, Yusufxon Jalolxo'jayev`,
+            _template: "table",
+            _captcha: "false",
+          }),
+        });
+
+        if (fsRes.ok) {
+          const fsData = await fsRes.json().catch(() => ({}));
+          if (
+            fsData.success === true ||
+            fsData.success === "true" ||
+            (fsData.message && fsData.message.includes("Activation"))
+          ) {
+            sentSuccessfully = true;
+          }
+        }
+      } catch (fsErr) {
+        console.warn("FormSubmit note:", fsErr);
+      }
+
+      // 3. Web3Forms zaxira
+      if (WEB3FORMS_ACCESS_KEY) {
+        try {
+          const body = new FormData();
+          body.append("access_key", WEB3FORMS_ACCESS_KEY);
+          body.append("name", payload.name.trim());
+          body.append("email", payload.email.trim());
+          body.append("subject", `[Portfolio] ${payload.subject.trim()}`);
+          body.append("message", payload.message.trim());
+          body.append("replyto", payload.email.trim());
+          body.append("from_name", payload.name.trim());
+          body.append("botcheck", "");
+
+          const w3Res = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body,
+          });
+
+          if (w3Res.ok) {
+            const text = await w3Res.text();
+            try {
+              const data = JSON.parse(text);
+              if (data.success === true || data.status === "success") {
+                sentSuccessfully = true;
+              }
+            } catch {
+              sentSuccessfully = true;
+            }
+          }
+        } catch (w3Err) {
+          console.warn("Web3Forms note:", w3Err);
+        }
+      }
+
+      if (!sentSuccessfully) {
+        throw new Error(c.errGeneric || "Xabar yuborishda xatolik yuz berdi");
       }
 
       setStatus("success");
@@ -111,6 +202,20 @@ function ContactForm() {
     } catch (err) {
       setStatus("error");
       setErrorMsg(err.message || c.errGeneric);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (e.target.tagName === "TEXTAREA") {
+        if (!e.shiftKey) {
+          e.preventDefault();
+          handleSubmit(e);
+        }
+      } else if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") {
+        e.preventDefault();
+        handleSubmit(e);
+      }
     }
   };
 
@@ -132,145 +237,135 @@ function ContactForm() {
       viewport={{ once: true }}
       transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
     >
-    <Glass borderRadius={24} blur={0.55} className="lg-form">
-    <form
-      ref={formRef}
-      className="contactForm contactForm-inner"
-      onSubmit={handleSubmit}
-      noValidate
-    >
-      {/* Web3Forms access key ham hidden input orqali */}
-      <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+      <Glass borderRadius={24} blur={0.55} className="lg-form">
+        <form
+          ref={formRef}
+          className="contactForm contactForm-inner"
+          onSubmit={handleSubmit}
+          onKeyDown={handleKeyDown}
+          noValidate
+        >
+          <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
 
-      {/* Honeypot — ko'rinmas, autofill uchun oddiy name emas */}
-      <input
-        type="checkbox"
-        name="botcheck"
-        className="contact-honeypot"
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-      />
+          <div className="row">
+            <div className="rowItem">
+              <label htmlFor="contact-name">{c.name}</label>
+              <input
+                id="contact-name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                placeholder={c.namePh}
+                disabled={status === "loading"}
+                className={fieldErrors.name ? "has-error" : ""}
+                onChange={() => clearError("name")}
+                required
+              />
+              {fieldErrors.name && (
+                <span className="field-error">{fieldErrors.name}</span>
+              )}
+            </div>
+            <div className="rowItem">
+              <label htmlFor="contact-email">{c.email}</label>
+              <input
+                id="contact-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                disabled={status === "loading"}
+                className={fieldErrors.email ? "has-error" : ""}
+                onChange={() => clearError("email")}
+                required
+              />
+              {fieldErrors.email && (
+                <span className="field-error">{fieldErrors.email}</span>
+              )}
+            </div>
+          </div>
 
-      <div className="row">
-        <div className="rowItem">
-          <label htmlFor="contact-name">{c.name}</label>
-          <input
-            id="contact-name"
-            name="name"
-            type="text"
-            autoComplete="name"
-            placeholder={c.namePh}
+          <div className="row">
+            <div className="fulrowItem">
+              <label htmlFor="contact-subject">{c.subject}</label>
+              <input
+                id="contact-subject"
+                name="subject"
+                type="text"
+                placeholder={c.subjectPh}
+                disabled={status === "loading"}
+                className={fieldErrors.subject ? "has-error" : ""}
+                onChange={() => clearError("subject")}
+                required
+              />
+              {fieldErrors.subject && (
+                <span className="field-error">{fieldErrors.subject}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="fulrowItem">
+              <label htmlFor="contact-message">{c.message}</label>
+              <textarea
+                id="contact-message"
+                name="message"
+                placeholder={c.messagePh}
+                disabled={status === "loading"}
+                className={fieldErrors.message ? "has-error" : ""}
+                onChange={() => clearError("message")}
+                required
+              />
+              {fieldErrors.message && (
+                <span className="field-error">{fieldErrors.message}</span>
+              )}
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {status === "success" && (
+              <motion.div
+                key="ok"
+                className="form-alert form-alert-ok"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                {c.success}
+                <span className="form-alert-hint">{c.successHint}</span>
+              </motion.div>
+            )}
+            {status === "error" && (
+              <motion.div
+                key="err"
+                className="form-alert form-alert-err"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                {errorMsg || c.errGeneric}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.button
+            type="submit"
+            className="sendBtn"
             disabled={status === "loading"}
-            className={fieldErrors.name ? "has-error" : ""}
-            onChange={() => clearError("name")}
-            required
-          />
-          {fieldErrors.name && (
-            <span className="field-error">{fieldErrors.name}</span>
-          )}
-        </div>
-        <div className="rowItem">
-          <label htmlFor="contact-email">{c.email}</label>
-          <input
-            id="contact-email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            disabled={status === "loading"}
-            className={fieldErrors.email ? "has-error" : ""}
-            onChange={() => clearError("email")}
-            required
-          />
-          {fieldErrors.email && (
-            <span className="field-error">{fieldErrors.email}</span>
-          )}
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="fulrowItem">
-          <label htmlFor="contact-subject">{c.subject}</label>
-          <input
-            id="contact-subject"
-            name="subject"
-            type="text"
-            placeholder={c.subjectPh}
-            disabled={status === "loading"}
-            className={fieldErrors.subject ? "has-error" : ""}
-            onChange={() => clearError("subject")}
-            required
-          />
-          {fieldErrors.subject && (
-            <span className="field-error">{fieldErrors.subject}</span>
-          )}
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="fulrowItem">
-          <label htmlFor="contact-message">{c.message}</label>
-          <textarea
-            id="contact-message"
-            name="message"
-            placeholder={c.messagePh}
-            disabled={status === "loading"}
-            className={fieldErrors.message ? "has-error" : ""}
-            onChange={() => clearError("message")}
-            required
-          />
-          {fieldErrors.message && (
-            <span className="field-error">{fieldErrors.message}</span>
-          )}
-        </div>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {status === "success" && (
-          <motion.div
-            key="ok"
-            className="form-alert form-alert-ok"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
+            whileHover={status === "loading" ? undefined : { y: -1 }}
+            whileTap={status === "loading" ? undefined : { scale: 0.99 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
-            {c.success}
-            <span className="form-alert-hint">{c.successHint}</span>
-          </motion.div>
-        )}
-        {status === "error" && (
-          <motion.div
-            key="err"
-            className="form-alert form-alert-err"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            {errorMsg || c.errGeneric}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <motion.button
-        type="submit"
-        className="sendBtn"
-        disabled={status === "loading"}
-        whileHover={status === "loading" ? undefined : { y: -1 }}
-        whileTap={status === "loading" ? undefined : { scale: 0.99 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {status === "loading" ? (
-          <span className="send-loading">
-            <span className="send-spinner" />
-            {c.sending}
-          </span>
-        ) : (
-          c.send
-        )}
-      </motion.button>
-    </form>
-    </Glass>
+            {status === "loading" ? (
+              <span className="send-loading">
+                <span className="send-spinner" />
+                {c.sending}
+              </span>
+            ) : (
+              c.send
+            )}
+          </motion.button>
+        </form>
+      </Glass>
     </motion.div>
   );
 }

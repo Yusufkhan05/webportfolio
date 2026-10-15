@@ -31,7 +31,7 @@ function Blog() {
   const [loading, setLoading] = useState(true);
 
   const blogDesc =
-    "Kamoliddin Mirzaboyev blog — Frontend, React, TypeScript, web dasturlash, loyihalar va tajriba haqida maqolalar.";
+    "Jalolxojayev Yusufxon blog — Frontend, React, TypeScript, web dasturlash, loyihalar va tajriba haqida maqolalar.";
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +54,7 @@ function Blog() {
         title="Blog — Frontend, React, TypeScript"
         description={blogDesc}
         path="/blog"
-        keywords="Kamoliddin Mirzaboyev blog, Frontend blog, React maqola, TypeScript, web dasturlash"
+        keywords="Jalolxojayev Yusufxon blog, Frontend blog, React maqola, TypeScript, web dasturlash"
       />
       <section className="blog-hero">
         <div className="container">

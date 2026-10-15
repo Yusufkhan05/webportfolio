@@ -1,35 +1,7 @@
 import { supabase, isSupabaseConfigured } from "./supabase";
 import { tableMissing } from "./projects";
 
-export const DEFAULT_BLOGS = [
-  {
-    id: "default-blog-1",
-    title: "React bilan boshlang'ich portfolio",
-    slug: "react-portfolio-start",
-    excerpt:
-      "Zamonaviy portfolio sayt qanday quriladi: komponentlar, animatsiya va deploy.",
-    content:
-      "Bu maqolada React + Vite bilan shaxsiy portfolio qurish haqida gaplashamiz.\n\n1) Loyiha strukturasi\n2) Animatsiyalar\n3) Deploy (Vercel/Netlify)\n\nAmaliyotda real loyihalar orqali o'rganish eng samarali yo'l.",
-    img: "/digital.jpg",
-    link: "",
-    published: true,
-    sort_order: 1,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "default-blog-2",
-    title: "Frontend dasturchi uchun 5 maslahat",
-    slug: "frontend-5-tips",
-    excerpt: "Kod sifati, UI/UX va o'sish yo'nalishi haqida qisqa maslahatlar.",
-    content:
-      "1. Toza va o'qiladigan kod yozing.\n2. Responsive dizaynni unutmang.\n3. Git odatlarini mustahkamlang.\n4. Real loyihalar qiling.\n5. Doim o'rganing.",
-    img: "/finsweet.jpg",
-    link: "https://github.com/KamoliddinMirzaboyev",
-    published: true,
-    sort_order: 2,
-    created_at: new Date().toISOString(),
-  },
-];
+export const DEFAULT_BLOGS = [];
 
 function slugify(text) {
   return String(text || "")
@@ -60,7 +32,7 @@ function normalizeBlog(row) {
 /** Public: faqat published */
 export async function fetchBlogs({ includeDrafts = false } = {}) {
   if (!isSupabaseConfigured || !supabase) {
-    return DEFAULT_BLOGS;
+    return [];
   }
 
   let q = supabase
@@ -77,11 +49,11 @@ export async function fetchBlogs({ includeDrafts = false } = {}) {
 
   if (error) {
     // jadval yo'q — default / bo'sh
-    return includeDrafts ? [] : DEFAULT_BLOGS;
+    return [];
   }
 
   if (!data?.length) {
-    return includeDrafts ? [] : DEFAULT_BLOGS;
+    return [];
   }
 
   return data.map(normalizeBlog);

@@ -827,7 +827,7 @@ function Admin() {
         ? "Sayt kontenti"
         : tab === "projects"
           ? "Loyihalar"
-          : "Blog";
+          : tab === "blogs" ? "Blog" : "Xabarlar";
 
   const goTab = (id) => {
     setTab(id);

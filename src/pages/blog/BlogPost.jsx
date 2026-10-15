@@ -81,12 +81,12 @@ function BlogPost() {
         title={post.title}
         description={
           post.excerpt ||
-          `${post.title} — Kamoliddin Mirzaboyev blog, Frontend dasturchi.`
+          `${post.title} — Jalolxojayev Yusufxon blog, Frontend dasturchi.`
         }
         path={`/blog/${post.slug || post.id}`}
         image={post.cover_image || post.image}
         type="article"
-        keywords={`${post.title}, Kamoliddin Mirzaboyev, Frontend, React`}
+        keywords={`${post.title}, Jalolxojayev Yusufxon, Frontend, React`}
         jsonLd={blogPostJsonLd(post)}
       />
       <article className="container blog-article">

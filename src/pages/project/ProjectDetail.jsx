@@ -121,7 +121,7 @@ function ProjectDetail() {
   const projectDesc =
     project.info ||
     project.description ||
-    `${project.name} — Kamoliddin Mirzaboyev frontend loyihasi. ${techLabels.join(", ")}`;
+    `${project.name} — Jalolxojayev Yusufxon frontend loyihasi. ${techLabels.join(", ")}`;
 
   return (
     <div className="projectPage">
@@ -133,7 +133,7 @@ function ProjectDetail() {
         type="article"
         keywords={[
           project.name,
-          "Kamoliddin Mirzaboyev",
+          "Jalolxojayev Yusufxon",
           "Frontend",
           "loyiha",
           "yotoqxona",

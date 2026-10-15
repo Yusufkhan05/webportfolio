@@ -59,8 +59,8 @@ function Navbar() {
       transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="container">
-        <Link to="/" className="logo" aria-label="Kamoliddin Mirzaboyev">
-          <img src="/icon.png" alt="Kamoliddin Mirzaboyev" className="logo-img" />
+        <Link to="/" className="logo" aria-label="Jalolxojayev Yusufxon">
+          <img src="/icon.png" alt="Jalolxojayev Yusufxon" className="logo-img" />
         </Link>
 
         <div className="navLinks">

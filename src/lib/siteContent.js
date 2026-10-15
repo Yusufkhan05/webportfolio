@@ -8,10 +8,10 @@ const LOCAL_STORAGE_KEY = "portfolio_site_content_v1";
 export function getDefaultSiteContent() {
   return {
     profile: {
-      name: "Kamoliddin Mirzaboyev",
-      initials: "KM",
-      role: "Frontend · React · TypeScript",
-      tags: ["Farg'ona", "O'zbekiston", uz.about.available],
+      name: "Jalolxojayev Yusufxon",
+      initials: "JY",
+      role: "Mobile · Flutter · Dart",
+      tags: ["O'zbekiston", uz.about.available],
     },
     hero: {
       badge: uz.hero.badge,
@@ -20,9 +20,9 @@ export function getDefaultSiteContent() {
       projectsBtn: uz.hero.projectsBtn,
       contactBtn: uz.hero.contactBtn,
       stats: [
-        { n: "1+", l: uz.hero.statExp },
+        { n: "3+", l: uz.hero.statExp },
         { n: "10+", l: uz.hero.statProjects },
-        { n: "4.7", l: uz.hero.statGpa },
+        { n: "4.1", l: uz.hero.statGpa },
       ],
     },
     about: {
